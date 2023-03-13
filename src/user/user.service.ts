@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entity/user.entity';
+import { PaginationResponseDto } from 'src/Global/pagination-response.dto';
 
 @Injectable()
 export class UserService {
@@ -13,8 +14,18 @@ export class UserService {
     private userRepository: Repository<User>
   ) {}
 
-  get(): Promise<User []> {
-    return this.userRepository.find();
+  async getDataWithPagination(page: number, pageSize: number): Promise<PaginationResponseDto<User>> {
+    const [data, total] = await this.userRepository.findAndCount({
+      take: pageSize,
+      skip: (page -1) * pageSize
+    })
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+    };
   }
 
   create(createUserDto: CreateUserDto) {
